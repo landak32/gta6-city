@@ -21,7 +21,7 @@ import { createJobState, stepJob, startTaxiFare, startCourierRun, activeObjectiv
 import { loadProgress, saveProgress as writeProfile, hasProgress } from '../core/save.js';
 
 const HOURS_PER_SECOND = 0.02;
-const MAX_VEHICLES = 30;
+const MAX_VEHICLES = 52;
 
 /** A clear patch of ground near (x, y): the pavement, never inside a wall or the harbour. */
 export function safeSpot(game, x, y) {
@@ -132,8 +132,8 @@ export function createGame(options = {}) {
       couriers: 0,
       moneyEarned: 0,
     },
-    trafficTarget: 20,
-    crowdTarget: 54,
+    trafficTarget: 34,
+    crowdTarget: 96,
     musicStep: 0,
     musicTimer: 0,
     mode: 'play',

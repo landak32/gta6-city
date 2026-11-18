@@ -406,11 +406,63 @@ export function drawBuilding(ctx, building, frame) {
   }
 
   // The roof.
-  ctx.fillStyle = building.roof;
+  // Each roof gets its own tint so a street of identical district stock still varies building to
+  // building: tar, pale gravel, oxidised red and sun-faded concrete all read as different surfaces.
+  const roofTone = 0.84 + ((building.seed % 11) / 11) * 0.3;
+  ctx.fillStyle = shade(building.roof, roofTone);
   ctx.fillRect(x + ox, y + oy, w, h);
   ctx.strokeStyle = 'rgba(255, 250, 232, 0.28)';
   ctx.lineWidth = 1.4;
   ctx.strokeRect(x + ox + 0.7, y + oy + 0.7, w - 1.4, h - 1.4);
+
+  // Roof surface: tar seams, a gravel speckle and a soft fall-off towards the parapet, so a big
+  // flat roof reads as a surface with age and texture instead of an empty grey slab.
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x + ox, y + oy, w, h);
+  ctx.clip();
+  const fall = ctx.createRadialGradient(
+    x + ox + w * 0.5, y + oy + h * 0.45, Math.min(w, h) * 0.1,
+    x + ox + w * 0.5, y + oy + h * 0.45, Math.max(w, h) * 0.75,
+  );
+  fall.addColorStop(0, 'rgba(255, 246, 224, 0.05)');
+  fall.addColorStop(1, 'rgba(0, 0, 0, 0.22)');
+  ctx.fillStyle = fall;
+  ctx.fillRect(x + ox, y + oy, w, h);
+
+  const seams = Math.max(1, Math.round(h / 26));
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.13)';
+  ctx.lineWidth = 1;
+  const seamOffset = (building.seed % 13) - 6;
+  for (let seam = 0; seam < seams; seam += 1) {
+    const sy = y + oy + ((seam + 0.5) * h) / seams + seamOffset * 0.2;
+    ctx.beginPath();
+    ctx.moveTo(x + ox + 2, sy);
+    ctx.lineTo(x + ox + w - 2, sy);
+    ctx.stroke();
+  }
+  // Gravel speckle: deterministic from the seed, a handful of flecks per building.
+  const flecks = Math.min(26, Math.round((w * h) / 900));
+  for (let fleck = 0; fleck < flecks; fleck += 1) {
+    const fx = x + ox + ((building.seed * (fleck + 7) * 37) % 1000) / 1000 * (w - 6) + 3;
+    const fy = y + oy + ((building.seed * (fleck + 3) * 53) % 1000) / 1000 * (h - 6) + 3;
+    ctx.fillStyle = fleck % 3 === 0 ? 'rgba(255, 246, 220, 0.07)' : 'rgba(0, 0, 0, 0.10)';
+    ctx.fillRect(fx, fy, 1.6, 1.6);
+  }
+  // A stair bulkhead in one corner: the box that gives a rooftop its silhouette.
+  const bulkW = Math.min(26, w * 0.28);
+  const bulkH = Math.min(20, h * 0.26);
+  const bx = x + ox + (building.seed % 2 === 0 ? w * 0.1 : w - bulkW - w * 0.1);
+  const by = y + oy + (building.seed % 3 === 0 ? h * 0.12 : h - bulkH - h * 0.12);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+  ctx.fillRect(bx + 2.5, by + 2.5, bulkW, bulkH);
+  ctx.fillStyle = shade(building.roof, 0.72);
+  ctx.fillRect(bx, by, bulkW, bulkH);
+  ctx.strokeStyle = 'rgba(255, 250, 232, 0.22)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(bx + 0.5, by + 0.5, bulkW - 1, bulkH - 1);
+  ctx.restore();
+
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.18)';
   ctx.strokeRect(x + ox + 4, y + oy + 4, w - 8, h - 8);
 

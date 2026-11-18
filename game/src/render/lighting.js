@@ -30,8 +30,8 @@ export function drawLighting(ctx, game, frame, view) {
     ctx.save();
     ctx.globalCompositeOperation = 'multiply';
     const gradient = ctx.createLinearGradient(view.x, view.y, view.x, view.y + view.h);
-    gradient.addColorStop(0, `rgba(22, 30, 66, ${0.7 * night})`);
-    gradient.addColorStop(1, `rgba(14, 18, 44, ${0.82 * night})`);
+    gradient.addColorStop(0, `rgba(26, 34, 70, ${0.5 * night})`);
+    gradient.addColorStop(1, `rgba(16, 22, 50, ${0.6 * night})`);
     ctx.fillStyle = gradient;
     ctx.fillRect(view.x, view.y, view.w, view.h);
     ctx.restore();
@@ -90,16 +90,19 @@ export function drawLighting(ctx, game, frame, view) {
     ctx.fill();
   }
 
-  // Muzzle flashes and explosions read as light, not as sprites.
+  // Muzzle flashes and explosions read as light, not as sprites. Kept deliberately faint: a burst
+  // spawns several overlapping glows, and additive blending saturates to flat white past ~0.15 each.
   for (const particle of game.particles.items) {
     if (!particle.glow) continue;
     const fade = 1 - particle.age / particle.life;
-    const glow = ctx.createRadialGradient(particle.x, particle.y, 1, particle.x, particle.y, 34);
-    glow.addColorStop(0, `rgba(255, 226, 160, ${0.5 * fade})`);
-    glow.addColorStop(1, 'rgba(255, 190, 90, 0)');
+    const radius = 18 + fade * 6;
+    const glow = ctx.createRadialGradient(particle.x, particle.y, 1, particle.x, particle.y, radius);
+    glow.addColorStop(0, `rgba(255, 214, 150, ${0.07 * fade})`);
+    glow.addColorStop(0.45, `rgba(255, 190, 110, ${0.035 * fade})`);
+    glow.addColorStop(1, 'rgba(255, 170, 80, 0)');
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(particle.x, particle.y, 34, 0, Math.PI * 2);
+    ctx.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
     ctx.fill();
   }
 

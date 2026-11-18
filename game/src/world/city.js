@@ -156,7 +156,7 @@ export function createCity(seed) {
     };
     // Rooftop clutter: air-conditioning boxes and vents, laid out on a small grid.
     const units = [];
-    const unitCount = Math.max(1, Math.floor((lot.w * lot.h) / 5200));
+    const unitCount = Math.max(2, Math.floor((lot.w * lot.h) / 3400));
     for (let index = 0; index < unitCount; index += 1) {
       const size = random.range(9, 20);
       units.push({

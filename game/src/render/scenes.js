@@ -45,7 +45,7 @@ function populate(game, count, nearX, nearY) {
 const STAGES = {
   /** A stolen sports car downtown at night, three stars, cruisers on the tail. */
   chase(game, input) {
-    game.clock.hour = 22.35;
+    game.clock.hour = 20.4;
     game.money = 18450;
     const roads = game.city.roads;
     const row = 1;
@@ -72,6 +72,10 @@ const STAGES = {
     addCruiser(game, x - 96, y - 8, 0.03);
     addCruiser(game, x - 172, y + 26, 0.02);
     addCruiser(game, x - 246, y - 24, -0.04);
+    // A fourth cruiser pulls alongside, siren lit, close enough to read as a PIT manoeuvre.
+    const flanker = addCruiser(game, x + 26, y - 44, 0.01);
+    flanker.targetSpeed = 310;
+    flanker.holdAlongside = true;
 
     for (let index = 0; index < 5; index += 1) {
       spawnTrafficCar(game, {
@@ -96,7 +100,7 @@ const STAGES = {
     const target = { x: x + 5000, y };
     return {
       warmup: 3,
-      zoom: 1.6,
+      zoom: 1.62,
       leadScale: 0.02,
       think() {
         driveToward(game, car, target.x, target.y, input, 0.66);
@@ -104,6 +108,18 @@ const STAGES = {
         let slot = 0;
         for (const cop of game.vehicles) {
           if (cop.ai !== 'police') continue;
+          if (cop.holdAlongside) {
+            // The flanker stays door-to-door rather than falling into the queue behind.
+            const sideX = car.x + Math.cos(car.angle) * 12 + Math.cos(car.angle + Math.PI / 2) * -46;
+            const sideY = car.y + Math.sin(car.angle) * 12 + Math.sin(car.angle + Math.PI / 2) * -46;
+            cop.x += (sideX - cop.x) * 0.16;
+            cop.y += (sideY - cop.y) * 0.16;
+            cop.angle = car.angle;
+            cop.vx = car.vx;
+            cop.vy = car.vy;
+            cop.siren = true;
+            continue;
+          }
           const gap = 96 + slot * 70;
           const tx = car.x - Math.cos(car.angle) * gap;
           const ty = car.y - Math.sin(car.angle) * gap + (slot % 2 === 0 ? -20 : 20);
